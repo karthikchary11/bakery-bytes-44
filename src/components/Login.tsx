@@ -16,8 +16,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setIsLoading(true);
 
     try {
@@ -75,14 +75,19 @@ const Login = () => {
               <label htmlFor="email" className="block text-sm font-medium mb-2">
                 Email Address
               </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !isLoading) {
+                      handleLogin();
+                    }
+                  }}
+                  placeholder="Enter your email"
+                  required
+                />
             </div>
             
             <div>
@@ -95,6 +100,11 @@ const Login = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !isLoading) {
+                      handleLogin();
+                    }
+                  }}
                   placeholder="Enter your password"
                   required
                 />
@@ -110,7 +120,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-golden [&:hover]:bg-gradient-golden [&:hover]:opacity-90" 
+              className="w-full bg-gradient-golden" 
               disabled={isLoading}
             >
               {isLoading ? (

@@ -11,7 +11,9 @@ import { Plus, Eye, Edit, Trash2, Save, X } from 'lucide-react';
 const ProductManagement = ({ products, setProducts }: { products: any[], setProducts: (products: any[]) => void }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [viewingProduct, setViewingProduct] = useState<any>(null);
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: '',
@@ -94,6 +96,11 @@ const ProductManagement = ({ products, setProducts }: { products: any[], setProd
   const openEditModal = (product: any) => {
     setEditingProduct({ ...product });
     setIsEditModalOpen(true);
+  };
+
+  const openViewModal = (product: any) => {
+    setViewingProduct(product);
+    setIsViewModalOpen(true);
   };
 
   return (
@@ -213,7 +220,7 @@ const ProductManagement = ({ products, setProducts }: { products: any[], setProd
                   </Badge>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" title="View Details">
+                  <Button size="sm" variant="outline" onClick={() => openViewModal(product)} title="View Details">
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => openEditModal(product)} title="Edit Product">
@@ -313,6 +320,73 @@ const ProductManagement = ({ products, setProducts }: { products: any[], setProd
                 <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
                   <X className="mr-2 h-4 w-4" />
                   Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Details Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Product Details</DialogTitle>
+          </DialogHeader>
+          {viewingProduct && (
+            <div className="space-y-4">
+              <div className="aspect-square bg-secondary rounded-lg overflow-hidden">
+                <img 
+                  src={viewingProduct.image} 
+                  alt={viewingProduct.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = `/api/placeholder/300/200?text=${encodeURIComponent(viewingProduct.name)}`;
+                  }}
+                />
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold text-lg">{viewingProduct.name}</h3>
+                  <Badge variant={viewingProduct.stock > 0 ? 'default' : 'destructive'} className="mt-1">
+                    {viewingProduct.category}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground">Price</label>
+                    <p className="text-lg font-bold text-primary">₹{viewingProduct.price}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-muted-foreground">Stock</label>
+                    <p className="text-lg font-bold">{viewingProduct.stock} units</p>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2">Description</label>
+                  <p className="text-sm">{viewingProduct.description || 'No description available'}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground">Total Sold</label>
+                  <p className="text-sm">{viewingProduct.sold || 0} units</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button onClick={() => {
+                  setIsViewModalOpen(false);
+                  openEditModal(viewingProduct);
+                }} className="flex-1 bg-gradient-pink">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Product
+                </Button>
+                <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>
+                  <X className="mr-2 h-4 w-4" />
+                  Close
                 </Button>
               </div>
             </div>

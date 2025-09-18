@@ -31,7 +31,7 @@ const UserDashboard = () => {
   const [activeTab, setActiveTab] = useState('products');
   const [products] = useState(fakeProducts.filter(p => p.stock > 0));
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [orders] = useState(fakeOrders.filter(order => order.userId === getCurrentUser()?.id));
+  const [orders, setOrders] = useState(fakeOrders.filter(order => order.userId === getCurrentUser()?.id));
   const { toast } = useToast();
   const user = getCurrentUser();
 
@@ -93,13 +93,26 @@ const UserDashboard = () => {
     }
 
     const orderId = generateOrderId();
+    const currentDate = new Date().toISOString().split('T')[0];
     
-    // Create order data for email
-    const orderData = {
+    // Create new order for user's order history
+    const newOrder = {
+      id: orderId,
+      userId: user?.id,
       productName: cart.map(item => `${item.name} (x${item.quantity})`).join(', '),
       quantity: cart.reduce((total, item) => total + item.quantity, 0),
       total: getTotalAmount(),
-      franchiseLocation: user?.location || 'Unknown Location',
+      status: 'pending' as const,
+      orderDate: currentDate,
+      franchiseLocation: user?.location || 'Unknown Location'
+    };
+    
+    // Create order data for email
+    const orderData = {
+      productName: newOrder.productName,
+      quantity: newOrder.quantity,
+      total: newOrder.total,
+      franchiseLocation: newOrder.franchiseLocation,
       customerName: user?.name || 'Unknown Customer'
     };
 
@@ -120,6 +133,9 @@ const UserDashboard = () => {
       });
     }
 
+    // Add new order to user's order history
+    setOrders(prevOrders => [newOrder, ...prevOrders]);
+    
     // Clear cart after placing order
     setCart([]);
   };

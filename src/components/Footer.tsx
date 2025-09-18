@@ -67,7 +67,12 @@ const Footer = () => {
                 placeholder="Enter your email address"
                 className="bg-primary-foreground/10 border-primary-foreground/20 text-primary-foreground placeholder:text-primary-foreground/60"
               />
-              <Button className="bg-primary hover:bg-primary-glow">
+              <Button 
+                className="bg-primary hover:bg-primary-glow"
+                onClick={() => {
+                  alert('Thank you for subscribing! You will receive updates about new products and special offers.');
+                }}
+              >
                 <Send className="h-4 w-4 mr-2" />
                 Subscribe
               </Button>
@@ -82,7 +87,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <h2 className="text-2xl font-bold mb-6 bg-gradient-golden bg-clip-text text-transparent">
-              Golden Bakery
+              Karachi Bakery
             </h2>
             <p className="text-primary-foreground/80 mb-6 leading-relaxed">
               Six decades of baking excellence, creating memories one bite at a time. 
@@ -164,7 +169,10 @@ const Footer = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="border-primary-foreground/20 text-primary-foreground hover:bg-primary/20"
+                className="border-primary-foreground/20 text-primary-foreground"
+                onClick={() => {
+                  alert('All 25 locations across India. Visit our website for complete list with addresses and contact details.');
+                }}
               >
                 View All Locations
               </Button>
@@ -179,7 +187,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-primary-foreground/70">
-            <span>© 2024 Golden Bakery. All rights reserved.</span>
+            <span>© 2024 Karachi Bakery. All rights reserved.</span>
             <span className="hidden md:inline">•</span>
             <span className="flex items-center gap-1">
               Made with <Heart className="h-3 w-3 text-bakery-berry fill-current" /> in Hyderabad

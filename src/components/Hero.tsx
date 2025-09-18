@@ -43,6 +43,10 @@ const Hero = () => {
             <Button 
               size="lg" 
               className="bg-gradient-warm text-primary-foreground shadow-glow hover:shadow-deep transition-all duration-300 transform hover:scale-105"
+              onClick={() => {
+                const menuSection = document.getElementById('product-categories');
+                menuSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               Explore Our Menu
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -52,7 +56,11 @@ const Hero = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-primary-foreground/30 text-primary-foreground backdrop-blur-sm [&:hover]:bg-primary-foreground/10 [&:hover]:border-primary-foreground/30 [&:hover]:text-primary-foreground"
+              className="border-primary-foreground/30 text-primary-foreground backdrop-blur-sm"
+              onClick={() => {
+                const storySection = document.getElementById('about');
+                storySection?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               <Heart className="mr-2 h-5 w-5" />
               Our Story
