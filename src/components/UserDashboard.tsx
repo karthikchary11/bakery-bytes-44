@@ -7,6 +7,7 @@ import { useToast } from '../hooks/use-toast';
 import { getCurrentUser } from '../utils/auth';
 import { fakeProducts } from '../data/products';
 import { fakeOrders, generateOrderId } from '../data/orders';
+import { sendOrderNotification } from '../utils/emailService';
 import { 
   ShoppingCart, 
   Package, 
@@ -81,7 +82,7 @@ const UserDashboard = () => {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
-  const placeOrder = () => {
+  const placeOrder = async () => {
     if (cart.length === 0) {
       toast({
         title: "Empty Cart",
@@ -93,11 +94,31 @@ const UserDashboard = () => {
 
     const orderId = generateOrderId();
     
-    // Simulate placing order
-    toast({
-      title: "Order Placed Successfully!",
-      description: `Order #${orderId} for ₹${getTotalAmount()} has been placed. Admin and you will receive email notifications.`,
-    });
+    // Create order data for email
+    const orderData = {
+      productName: cart.map(item => `${item.name} (x${item.quantity})`).join(', '),
+      quantity: cart.reduce((total, item) => total + item.quantity, 0),
+      total: getTotalAmount(),
+      franchiseLocation: user?.location || 'Unknown Location',
+      customerName: user?.name || 'Unknown Customer'
+    };
+
+    try {
+      // Send order notification email to admin
+      await sendOrderNotification(orderData);
+      
+      toast({
+        title: "Order Placed Successfully!",
+        description: `Order #${orderId} for ₹${getTotalAmount()} has been placed. Admin has been notified via email.`,
+      });
+    } catch (emailError) {
+      console.error('Failed to send order notification:', emailError);
+      
+      toast({
+        title: "Order Placed",
+        description: `Order #${orderId} for ₹${getTotalAmount()} has been placed, but email notification failed.`,
+      });
+    }
 
     // Clear cart after placing order
     setCart([]);

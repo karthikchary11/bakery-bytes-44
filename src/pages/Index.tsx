@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
@@ -13,6 +13,9 @@ const Index = () => {
   const user = getCurrentUser();
 
   useEffect(() => {
+    // Set page title
+    document.title = "Karachi Bakery | Fresh Artisanal Baked Goods | Hyderabad's Premier Bakery";
+    
     // If user is logged in, redirect to their dashboard
     if (user) {
       if (user.role === 'admin') {

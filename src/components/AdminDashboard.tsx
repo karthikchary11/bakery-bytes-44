@@ -19,33 +19,75 @@ import {
   Trash2
 } from 'lucide-react';
 import AnalyticsDashboard from './AnalyticsDashboard';
+import ProductManagement from './ProductManagement';
+import { sendApprovalNotification } from '../utils/emailService';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [products] = useState(fakeProducts);
+  const [products, setProducts] = useState(fakeProducts);
   const [users, setUsers] = useState(fakeUsers);
   const [orders] = useState(fakeOrders);
   const { toast } = useToast();
 
-  const approveUser = (userId: number) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, approved: true } : user
+  const approveUser = async (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    setUsers(users.map(u => 
+      u.id === userId ? { ...u, approved: true } : u
     ));
+    
     toast({
       title: "User Approved",
-      description: "Franchise owner approved successfully. Email notification sent.",
+      description: "Franchise owner approved successfully.",
     });
+
+    // Send approval email
+    try {
+      await sendApprovalNotification(user, true);
+      toast({
+        title: "Email Sent",
+        description: "Approval notification sent to user.",
+      });
+    } catch (emailError) {
+      console.error('Failed to send approval email:', emailError);
+      toast({
+        title: "Email Warning",
+        description: "User approved but email notification failed.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const rejectUser = (userId: number) => {
-    setUsers(users.map(user => 
-      user.id === userId ? { ...user, approved: false } : user
+  const rejectUser = async (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    setUsers(users.map(u => 
+      u.id === userId ? { ...u, approved: false } : u
     ));
+    
     toast({
-      title: "User Rejected",
-      description: "Franchise owner rejected. Email notification sent.",
+      title: "User Rejected", 
+      description: "Franchise owner rejected.",
       variant: "destructive",
     });
+
+    // Send rejection email
+    try {
+      await sendApprovalNotification(user, false);
+      toast({
+        title: "Email Sent",
+        description: "Rejection notification sent to user.",
+      });
+    } catch (emailError) {
+      console.error('Failed to send rejection email:', emailError);
+      toast({
+        title: "Email Warning",
+        description: "User rejected but email notification failed.",
+        variant: "destructive",
+      });
+    }
   };
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -174,51 +216,7 @@ const AdminDashboard = () => {
         )}
 
         {activeTab === 'products' && (
-          <Card className="shadow-soft">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Product Management</CardTitle>
-              <Button className="bg-gradient-pink">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Product
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <Card key={product.id} className="shadow-soft">
-                    <CardContent className="p-4">
-                      <div className="aspect-square bg-secondary rounded-lg mb-4 overflow-hidden">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <h3 className="font-semibold mb-2">{product.name}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">{product.description}</p>
-                      <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold text-primary">₹{product.price}</span>
-                        <Badge variant={product.stock > 0 ? 'default' : 'destructive'}>
-                          {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <ProductManagement products={products} setProducts={setProducts} />
         )}
 
         {activeTab === 'users' && (

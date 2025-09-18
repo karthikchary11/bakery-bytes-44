@@ -48,10 +48,11 @@ const Hero = () => {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
             
+            {/* Our Story Section - No hover effects */}
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10 backdrop-blur-sm"
+              className="border-primary-foreground/30 text-primary-foreground backdrop-blur-sm [&:hover]:bg-primary-foreground/10 [&:hover]:border-primary-foreground/30 [&:hover]:text-primary-foreground"
             >
               <Heart className="mr-2 h-5 w-5" />
               Our Story

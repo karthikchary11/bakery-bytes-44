@@ -48,10 +48,10 @@ const About = () => {
           {/* Story Content */}
           <div className="space-y-8">
             <div>
-              <h3 className="text-3xl font-bold mb-4">The Golden Bakery Story</h3>
+              <h3 className="text-3xl font-bold mb-4">The Karachi Bakery Story</h3>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  A staggering chronicle of six decades and still going strong, Golden Bakery has emerged as a 
+                  A staggering chronicle of six decades and still going strong, Karachi Bakery has emerged as a 
                   <span className="font-semibold text-primary"> "True Icon of Artisanal Baking"</span> with a reputation 
                   that is unmatched to the core.
                 </p>
@@ -92,7 +92,7 @@ const About = () => {
             <h3 className="text-3xl font-bold mb-8">What Makes Us Special</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {values.map((value) => (
-                <Card key={value.title} className="border-0 shadow-soft hover:shadow-warm transition-shadow duration-300">
+                <Card key={value.title} className="border-0 shadow-soft">
                   <CardContent className="p-6 text-center">
                     <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-background shadow-soft mb-4 ${value.color}`}>
                       <value.icon className="h-6 w-6" />
@@ -108,7 +108,7 @@ const About = () => {
           </div>
         </div>
 
-        {/* Mission Statement */}
+        {/* Mission Statement - No hover effects */}
         <div className="mt-20 text-center">
           <div className="bg-gradient-golden p-12 rounded-2xl shadow-glow max-w-4xl mx-auto">
             <h3 className="text-3xl font-bold text-primary-foreground mb-6">Our Mission</h3>

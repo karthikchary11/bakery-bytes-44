@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { login } from '../utils/auth';
 import { useToast } from '../hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { sendLoginAlert } from '../utils/emailService';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -27,6 +28,13 @@ const Login = () => {
           title: "Login Successful",
           description: `Welcome back, ${result.user.name}!`,
         });
+
+        // Send login alert email
+        try {
+          await sendLoginAlert(result.user);
+        } catch (emailError) {
+          console.error('Failed to send login alert:', emailError);
+        }
         
         // Redirect based on role
         if (result.user.role === 'admin') {
@@ -102,7 +110,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-golden" 
+              className="w-full bg-gradient-golden [&:hover]:bg-gradient-golden [&:hover]:opacity-90" 
               disabled={isLoading}
             >
               {isLoading ? (

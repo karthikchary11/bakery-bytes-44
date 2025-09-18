@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { register } from '../utils/auth';
 import { useToast } from '../hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
+import { sendRegistrationNotification } from '../utils/emailService';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -49,6 +50,22 @@ const Register = () => {
           title: "Registration Successful",
           description: result.message,
         });
+
+        // Send registration notification email to admin
+        try {
+          await sendRegistrationNotification(formData);
+          toast({
+            title: "Notification Sent",
+            description: "Admin has been notified of your registration.",
+          });
+        } catch (emailError) {
+          console.error('Failed to send registration notification:', emailError);
+          toast({
+            title: "Email Warning", 
+            description: "Registration successful but admin notification failed.",
+            variant: "destructive",
+          });
+        }
         
         // Redirect to login after successful registration
         setTimeout(() => {
