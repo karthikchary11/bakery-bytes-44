@@ -5,7 +5,6 @@ import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { login } from '../utils/auth';
 import { useToast } from '../hooks/use-toast';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { sendLoginAlert } from '../utils/emailService';
 
 const Login = () => {
