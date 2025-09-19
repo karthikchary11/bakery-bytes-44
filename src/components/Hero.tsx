@@ -55,8 +55,8 @@ const Hero = () => {
             {/* Our Story Section - No hover effects */}
             <Button 
               size="lg" 
-              variant="default" 
-              className="border-primary-foreground/30 text-primary-foreground backdrop-blur-sm"
+              variant="outline" 
+              className="border-primary-foreground/90 text-primary-foreground backdrop-blur-sm"
               onClick={() => {
                 const storySection = document.getElementById('about');
                 storySection?.scrollIntoView({ behavior: 'smooth' });
