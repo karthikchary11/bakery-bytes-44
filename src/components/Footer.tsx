@@ -169,7 +169,7 @@ const Footer = () => {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="border-primary-foreground/20 text-primary-foreground"
+                className="bg-primary hover:bg-primary-glow"
                 onClick={() => {
                   alert('All 25 locations across India. Visit our website for complete list with addresses and contact details.');
                 }}
