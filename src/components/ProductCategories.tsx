@@ -44,7 +44,7 @@ const ProductCategories = () => {
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Crafted with 
-            <span className="bg-gradient-golden bg-clip-text text-transparent"> Passion</span>
+            <span className="bg-gradient-golden bg-clip-text "> Passion</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Every item in our collection represents decades of perfected recipes, 
