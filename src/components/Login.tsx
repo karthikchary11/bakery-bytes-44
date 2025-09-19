@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { login } from '../utils/auth';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { sendLoginAlert } from '../utils/emailService';
 
