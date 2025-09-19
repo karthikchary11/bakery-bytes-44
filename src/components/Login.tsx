@@ -120,8 +120,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-golden" 
-              disabled={isLoading}
+              className="w-full bg-gradient-golden"
             >
              Sign in
             </Button>
