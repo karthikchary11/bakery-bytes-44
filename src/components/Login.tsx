@@ -123,14 +123,7 @@ const Login = () => {
               className="w-full bg-gradient-golden" 
               disabled={isLoading}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing In...
-                </>
-              ) : (
-                'Sign In'
-              )}
+             Sign in
             </Button>
           </form>
 
