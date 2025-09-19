@@ -120,7 +120,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary-glow"
+              className="w-full bg-primary hover:bg-primary-glow"
             >
             Sign In
             </Button>
