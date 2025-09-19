@@ -110,7 +110,7 @@ const About = () => {
 
         {/* Mission Statement - No hover effects */}
         <div className="mt-20 text-center">
-          <div className="bg-gradient-golden p-12 rounded-2xl shadow-glow max-w-4xl mx-auto">
+          <div className="bg-gradient-pink p-12 rounded-2xl shadow-glow max-w-4xl mx-auto">
             <h3 className="text-3xl font-bold text-primary-foreground mb-6">Our Mission</h3>
             <p className="text-xl text-primary-foreground/90 leading-relaxed">
               To preserve the art of traditional baking while embracing innovation, creating memorable experiences 

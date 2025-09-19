@@ -86,7 +86,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <h2 className="text-2xl font-bold mb-6 bg-gradient-golden bg-clip-text text-transparent">
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-pink bg-clip-text text-transparent">
               Karachi Bakery Application
             </h2>
             <p className="text-primary-foreground/80 mb-6 leading-relaxed">

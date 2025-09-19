@@ -27,7 +27,7 @@ const Hero = () => {
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6">
             <span className="text-primary-foreground">Freshly Baked</span>
             <br />
-            <span className="bg-gradient-golden bg-clip-text text-transparent">
+            <span className="bg-gradient-pink bg-clip-text text-transparent">
               With Love
             </span>
           </h1>

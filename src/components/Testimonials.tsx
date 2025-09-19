@@ -78,7 +78,7 @@ const Testimonials = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-gradient-golden rounded-2xl p-12 shadow-glow">
+        <div className="bg-gradient-pink rounded-2xl p-12 shadow-glow">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-4xl font-bold text-primary-foreground mb-2">4.9★</div>

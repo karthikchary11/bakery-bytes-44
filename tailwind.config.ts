@@ -62,8 +62,8 @@ export default {
         "gradient-cream": "var(--gradient-cream)",
         "gradient-sunset": "var(--gradient-sunset)",
         "gradient-pink": "var(--gradient-pink)",
-        // New golden gradient added here
-        "gradient-golden": "linear-gradient(90deg, #FFD700 0%, #FFC700 30%, #FFB900 60%, #FF9F00 100%)",
+        // Pink gradient for branding
+        "gradient-pink": "linear-gradient(90deg, #ec4899 0%, #f472b6 30%, #f97316 60%, #fb7185 100%)",
       },
       boxShadow: {
         soft: "var(--shadow-soft)",
