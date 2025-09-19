@@ -4,8 +4,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { login } from '../utils/auth';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { sendLoginAlert } from '../utils/emailService';
 
 const Login = () => {
@@ -65,7 +65,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-warm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-primary">
-             Karachi Bakery
+            🍰 Karachi Bakery
           </CardTitle>
           <p className="text-muted-foreground">Franchise Orders Management</p>
         </CardHeader>
@@ -117,19 +117,13 @@ const Login = () => {
                 </button>
               </div>
             </div>
-             <Button 
+
+            <Button 
               type="submit" 
               className="w-full bg-gradient-golden" 
               disabled={isLoading}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing In...
-                </>
-              ) : (
-                'Sign In'
-              )}
+             Sign in
             </Button>
           </form>
 
