@@ -65,7 +65,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-warm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-primary">
-            Karachi Bakery Application
+            Karachi Bakery 
           </CardTitle>
           <p className="text-muted-foreground">Franchise Orders Management</p>
         </CardHeader>
@@ -118,7 +118,7 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-gradient-golden" disabled={isLoading} >
+            <Button type="submit" className="w-full bg-gradient" disabled={isLoading} >
  {              isLoading ? ( <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In... </> ) : ( 'Sign In' )} 
             </Button>
           </form>
