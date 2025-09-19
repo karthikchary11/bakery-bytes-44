@@ -117,11 +117,19 @@ const Login = () => {
                 </button>
               </div>
             </div>
-
-            <Button 
-              type="submit"
+             <Button 
+              type="submit" 
+              className="w-full bg-gradient-golden" 
+              disabled={isLoading}
             >
-             Sign in
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing In...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </form>
 
