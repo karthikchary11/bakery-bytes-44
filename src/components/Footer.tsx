@@ -187,7 +187,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-primary-foreground/70">
-            <span>© 2024 Karachi Bakery. All rights reserved.</span>
+            <span>© 2025 Karachi Bakery. All rights reserved KD DEVELOPERS.</span>
             <span className="hidden md:inline">•</span>
             <span className="flex items-center gap-1">
               Made with <Heart className="h-3 w-3 text-bakery-berry fill-current" /> in Hyderabad
