@@ -14,7 +14,7 @@ const Index = () => {
 
   useEffect(() => {
     // Set page title
-    document.title = "Karachi Bakery Application";
+    document.title = "Karachi Bakery";
     
     // If user is logged in, redirect to their dashboard
     if (user) {

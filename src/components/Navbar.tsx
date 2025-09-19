@@ -28,10 +28,10 @@ const Navbar = () => {
           <Link to="/" className="flex items-center space-x-3">
             <img 
               src={karachiBakeryLogo} 
-              alt="Karachi Bakery Application" 
+              alt="Karachi Bakery" 
               className="h-10 w-10 object-contain"
             />
-            <span className="font-bold text-xl text-primary">Karachi Bakery Application</span>
+            <span className="font-bold text-xl text-primary">Karachi Bakery</span>
           </Link>
 
           {/* Navigation Links */}

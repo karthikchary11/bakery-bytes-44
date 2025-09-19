@@ -7,6 +7,7 @@ import { login } from '../utils/auth';
 import { useToast } from '../hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { sendLoginAlert } from '../utils/emailService';
+import karachiBakeryLogo from '../assets/karachi-bakery-logo.png';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -64,6 +65,13 @@ const Login = () => {
     <div className="min-h-screen bg-gradient-warm flex items-center justify-center p-4">
       <Card className="w-full max-w-md shadow-warm">
         <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <img 
+              src={karachiBakeryLogo} 
+              alt="Karachi Bakery" 
+              className="h-16 w-16 object-contain"
+            />
+          </div>
           <CardTitle className="text-2xl font-bold text-primary">
             Karachi Bakery 
           </CardTitle>

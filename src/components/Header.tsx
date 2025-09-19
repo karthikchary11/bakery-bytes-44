@@ -9,7 +9,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, ShoppingBag, Phone, MapPin } from "lucide-react";
+import { Menu, ShoppingBag, Phone, MapPin, Home } from "lucide-react";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -121,7 +121,10 @@ const Header = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-background border-border">
               <nav className="flex flex-col gap-4 mt-8">
-                <a href="/" className="text-lg font-medium hover:text-primary transition-colors">Home</a>
+                <a href="/" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
+                  <Home className="h-5 w-5" />
+                  Home
+                </a>
                 
                 {productCategories.map((category) => (
                   <div key={category.title} className="space-y-2">

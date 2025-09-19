@@ -22,7 +22,7 @@ export const sendRegistrationNotification = (userData) => {
   const emailData = {
     to_name: "Admin",
     to_email: "divyakanneti3@gmail.com",
-    from_name: "Karachi Bakery Application System",
+    from_name: "Karachi Bakery System",
     subject: "New Franchise Registration - Approval Required",
     message: `A new franchise owner has registered and requires approval:
     
@@ -46,20 +46,20 @@ export const sendApprovalNotification = (userData, isApproved) => {
   const emailData = {
     to_name: userData.name,
     to_email: userData.email,
-    from_name: "Karachi Bakery Application",
+    from_name: "Karachi Bakery",
     subject: `Franchise Registration ${isApproved ? 'Approved' : 'Rejected'}`,
     message: `Dear ${userData.name},
 
 Your franchise registration has been ${status}.
 
 ${isApproved ? 
-  'Welcome to the Karachi Bakery Application family! You can now login to access your dashboard and start managing your franchise orders.' : 
+  'Welcome to the Karachi Bakery family! You can now login to access your dashboard and start managing your franchise orders.' : 
   'Unfortunately, your application does not meet our current requirements. Please contact us for more information.'}
 
 Location: ${userData.location}
 
 Best regards,
-Karachi Bakery Application Team`,
+Karachi Bakery Team`,
     user_name: userData.name,
     user_location: userData.location,
     approval_status: status
@@ -152,7 +152,7 @@ export const sendLoginAlert = (userData) => {
   const emailData = {
     to_name: "Admin",
     to_email: "divyakanneti3@gmail.com",
-    from_name: "Karachi Bakery Application System",
+    from_name: "Karachi Bakery System",
     subject: "User Login Alert",
     message: `User login detected:
     
