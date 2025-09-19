@@ -87,7 +87,7 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <h2 className="text-2xl font-bold mb-6 bg-gradient-golden bg-clip-text text-transparent">
-              Karachi Bakery
+              Karachi Bakery Application
             </h2>
             <p className="text-primary-foreground/80 mb-6 leading-relaxed">
               Six decades of baking excellence, creating memories one bite at a time. 
@@ -185,7 +185,7 @@ const Footer = () => {
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-primary-foreground/70">
-            <span>© 2025 Karachi Bakery. All rights reserved KD DEVELOPERS.</span>
+            <span>© 2025 Karachi Bakery Application. All rights reserved KD DEVELOPERS.</span>
             <span className="hidden md:inline">•</span>
             <span className="flex items-center gap-1">
               Made with <Heart className="h-3 w-3 text-bakery-berry fill-current" /> in Hyderabad

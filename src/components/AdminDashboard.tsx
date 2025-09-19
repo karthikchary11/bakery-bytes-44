@@ -110,7 +110,7 @@ const AdminDashboard = () => {
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your Karachi Bakery franchise network</p>
+          <p className="text-muted-foreground">Manage your Karachi Bakery Application franchise network</p>
         </div>
 
         {/* Overview Cards */}

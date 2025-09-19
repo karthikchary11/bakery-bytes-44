@@ -48,7 +48,7 @@ const About = () => {
           {/* Story Content */}
           <div className="space-y-8">
             <div>
-              <h3 className="text-3xl font-bold mb-4">The Karachi Bakery Story</h3>
+              <h3 className="text-3xl font-bold mb-4">The Karachi Bakery Application Story</h3>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
                   A staggering chronicle of six decades and still going strong, Karachi Bakery has emerged as a 

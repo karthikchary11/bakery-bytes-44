@@ -96,7 +96,7 @@ const Register = () => {
           <CardTitle className="text-2xl font-bold text-primary">
             🍰 Franchise Registration
           </CardTitle>
-          <p className="text-muted-foreground">Join Karachi Bakery Network</p>
+          <p className="text-muted-foreground">Join Karachi Bakery Application Network</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleRegister} className="space-y-4">

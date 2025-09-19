@@ -57,7 +57,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <h1 className="text-2xl md:text-3xl font-bold bg-gradient-golden bg-clip-text text-transparent">
-              Karachi Bakery
+              Karachi Bakery Application
             </h1>
           </div>
 

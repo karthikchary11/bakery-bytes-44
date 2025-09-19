@@ -14,7 +14,7 @@ const Index = () => {
 
   useEffect(() => {
     // Set page title
-    document.title = "Karachi Bakery | Fresh Artisanal Baked Goods | Hyderabad's Premier Bakery";
+    document.title = "Karachi Bakery Application";
     
     // If user is logged in, redirect to their dashboard
     if (user) {
