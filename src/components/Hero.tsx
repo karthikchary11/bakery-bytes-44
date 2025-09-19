@@ -56,7 +56,7 @@ const Hero = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="border-primary-foreground/90 text-primary-foreground backdrop-blur-sm"
+              className="bg-gradient-warm text-primary-foreground shadow-glow hover:shadow-deep transition-all duration-300 transform hover:scale-105"
               onClick={() => {
                 const storySection = document.getElementById('about');
                 storySection?.scrollIntoView({ behavior: 'smooth' });
