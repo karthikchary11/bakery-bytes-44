@@ -120,7 +120,7 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-golden"
+              className="bg-gradient-golden"
             >
              Sign in
             </Button>
