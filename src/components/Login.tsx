@@ -65,7 +65,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-warm">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-primary">
-            🍰 Karachi Bakery
+            Karachi Bakery
           </CardTitle>
           <p className="text-muted-foreground">Franchise Orders Management</p>
         </CardHeader>
@@ -120,11 +120,11 @@ const Login = () => {
 
             <Button 
               type="submit" 
-              className="w-full bg-gradient-golden" 
-              disabled={isLoading}
+              className="w-full bg-gradient-golden"
             >
-             Sign in
+            Sign In
             </Button>
+
           </form>
 
           <div className="mt-6 p-4 bg-secondary rounded-lg">
