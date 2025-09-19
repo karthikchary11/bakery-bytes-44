@@ -167,8 +167,6 @@ const Footer = () => {
                 </div>
               ))}
               <Button 
-                variant="outline" 
-                size="sm" 
                 className="bg-primary hover:bg-primary-glow"
                 onClick={() => {
                   alert('All 25 locations across India. Visit our website for complete list with addresses and contact details.');
