@@ -118,13 +118,9 @@ const Login = () => {
               </div>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-primary hover:bg-primary-glow"
-            >
-            Sign In
+            <Button type="submit" className="w-full bg-gradient-golden" disabled={isLoading} >
+ {              isLoading ? ( <> <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In... </> ) : ( 'Sign In' )} 
             </Button>
-
           </form>
 
           <div className="mt-6 p-4 bg-secondary rounded-lg">
