@@ -226,17 +226,12 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {users.filter(user => ["outlet_manager", "factory_manager"].includes(user.role)).map((user) => (
+                {users.filter(user => user.role === 'user').map((user) => (
                   <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h3 className="font-medium">{user.name}</h3>
                       <p className="text-sm text-muted-foreground">{user.email}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {user.role === 'outlet_manager' ? user.branchLocation : user.factoryName}
-                      </p>
-                      <Badge variant="outline" className="mt-1">
-                        {user.role === 'outlet_manager' ? 'Outlet Manager' : 'Factory Manager'}
-                      </Badge>
+                      <p className="text-sm text-muted-foreground">{user.location}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={user.approved ? 'default' : 'secondary'}>

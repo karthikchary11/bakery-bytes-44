@@ -9,8 +9,6 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import AdminDashboard from "./components/AdminDashboard";
 import UserDashboard from "./components/UserDashboard";
-import OutletManagerDashboard from "./components/OutletManagerDashboard";
-import FactoryManagerDashboard from "./components/FactoryManagerDashboard";
 import Navbar from "./components/Navbar";
 import { getCurrentUser } from "./utils/auth";
 
@@ -48,22 +46,6 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="admin">
                   <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/outlet" 
-              element={
-                <ProtectedRoute requiredRole="outlet_manager">
-                  <OutletManagerDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/factory" 
-              element={
-                <ProtectedRoute requiredRole="factory_manager">
-                  <FactoryManagerDashboard />
                 </ProtectedRoute>
               } 
             />
