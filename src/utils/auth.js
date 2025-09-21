@@ -40,6 +40,16 @@ export const isAdmin = () => {
   return user && user.role === "admin";
 };
 
+export const isOutletManager = () => {
+  const user = getCurrentUser();
+  return user && user.role === "outlet_manager";
+};
+
+export const isFactoryManager = () => {
+  const user = getCurrentUser();
+  return user && user.role === "factory_manager";
+};
+
 export const register = (userData) => {
   // In real app, this would make API call
   // For prototype, we'll just simulate success
@@ -59,6 +69,20 @@ export const requireAuth = (user, redirectTo = "/login") => {
 
 export const requireAdmin = (user) => {
   if (!user || user.role !== "admin") {
+    return { redirect: "/login" };
+  }
+  return { allowed: true };
+};
+
+export const requireOutletManager = (user) => {
+  if (!user || user.role !== "outlet_manager") {
+    return { redirect: "/login" };
+  }
+  return { allowed: true };
+};
+
+export const requireFactoryManager = (user) => {
+  if (!user || user.role !== "factory_manager") {
     return { redirect: "/login" };
   }
   return { allowed: true };
