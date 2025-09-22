@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -8,14 +8,18 @@ import {
   getFactoryOrdersByStatus 
 } from '../data/factoryOrders';
 import { fakeProducts } from '../data/products';
-import { TrendingUp, Package, DollarSign, MapPin, Clock, CheckCircle } from 'lucide-react';
+import { TrendingUp, Package, DollarSign, MapPin, Clock, CheckCircle, Calendar } from 'lucide-react';
 
 interface FactoryAnalyticsProps {
   factoryId: number;
   factoryType: string;
+  selectedBranch?: string;
+  selectedDateFilter?: string;
 }
 
-const FactoryAnalytics = ({ factoryId, factoryType }: FactoryAnalyticsProps) => {
+const FactoryAnalytics = ({ factoryId, factoryType, selectedBranch, selectedDateFilter }: FactoryAnalyticsProps) => {
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState('month');
+
   // Get factory-specific data
   const factoryOrders = getFactoryOrdersByFactory(factoryId);
   const factoryProducts = fakeProducts.filter(p => {
@@ -30,8 +34,82 @@ const FactoryAnalytics = ({ factoryId, factoryType }: FactoryAnalyticsProps) => 
     return categoryMapping[factoryType] === p.category;
   });
 
+  // Date filtering helper function
+  const getDateFilteredOrders = (orders: any[]) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    switch (selectedDateFilter) {
+      case 'today':
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate.toDateString() === today.toDateString();
+        });
+      case 'yesterday':
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate.toDateString() === yesterday.toDateString();
+        });
+      case 'thisWeek':
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate >= weekStart;
+        });
+      case 'thisMonth':
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate.getMonth() === today.getMonth() && 
+                 orderDate.getFullYear() === today.getFullYear();
+        });
+      default:
+        return orders;
+    }
+  };
+
+  // Time period filtering for analytics
+  const getTimeFilteredData = (data: any[]) => {
+    const now = new Date();
+    
+    switch (selectedTimePeriod) {
+      case 'week':
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        return data.filter(item => new Date(item.date || item.orderDate) >= weekAgo);
+        
+      case 'month':
+        return data.filter(item => {
+          const itemDate = new Date(item.date || item.orderDate);
+          return itemDate.getMonth() === now.getMonth() && 
+                 itemDate.getFullYear() === now.getFullYear();
+        });
+        
+      case 'quarter':
+        const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+        return data.filter(item => new Date(item.date || item.orderDate) >= quarterStart);
+        
+      case 'year':
+        return data.filter(item => {
+          const itemDate = new Date(item.date || item.orderDate);
+          return itemDate.getFullYear() === now.getFullYear();
+        });
+        
+      default:
+        return data;
+    }
+  };
+
+  // Apply filters
+  let filteredOrders = getDateFilteredOrders(factoryOrders);
+  if (selectedBranch && selectedBranch !== 'all') {
+    filteredOrders = filteredOrders.filter(order => order.branchId.toString() === selectedBranch);
+  }
+  filteredOrders = getTimeFilteredData(filteredOrders);
+
   // Prepare data for charts
-  const branchData = factoryOrders.reduce((acc, order) => {
+  const branchData = filteredOrders.reduce((acc, order) => {
     const branchName = order.branchName;
     if (!acc[branchName]) {
       acc[branchName] = { orders: 0, revenue: 0 };
@@ -70,8 +148,8 @@ const FactoryAnalytics = ({ factoryId, factoryType }: FactoryAnalyticsProps) => 
     stock: product.stock
   }));
 
-  const totalRevenue = factoryOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-  const totalOrders = factoryOrders.length;
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const totalOrders = filteredOrders.length;
   const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
   const pendingOrders = getFactoryOrdersByStatus(factoryId, 'pending').length;
 
@@ -92,6 +170,34 @@ const FactoryAnalytics = ({ factoryId, factoryType }: FactoryAnalyticsProps) => 
 
   return (
     <div className="space-y-6">
+      {/* Time Period Filter */}
+      <Card className="shadow-soft">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-4">
+            <Calendar className="h-5 w-5 text-primary" />
+            <h3 className="text-lg font-semibold">Analytics Period:</h3>
+            <select
+              value={selectedTimePeriod}
+              onChange={(e) => setSelectedTimePeriod(e.target.value)}
+              className="p-2 border rounded-md bg-background"
+            >
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="quarter">This Quarter</option>
+              <option value="year">This Year</option>
+            </select>
+            {selectedDateFilter && selectedDateFilter !== 'all' && (
+              <span className="text-sm text-muted-foreground">
+                + {selectedDateFilter === 'today' ? 'Today' :
+                   selectedDateFilter === 'yesterday' ? 'Yesterday' :
+                   selectedDateFilter === 'thisWeek' ? 'This Week' :
+                   selectedDateFilter === 'thisMonth' ? 'This Month' : selectedDateFilter} filter
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="shadow-soft">

@@ -23,7 +23,11 @@ import {
   Filter,
   Search,
   Factory,
-  MapPin
+  MapPin,
+  Calendar,
+  CalendarDays,
+  XCircle,
+  Edit
 } from 'lucide-react';
 import FactoryAnalytics from './FactoryAnalytics';
 
@@ -31,18 +35,55 @@ const FactoryDashboard = () => {
   const [activeTab, setActiveTab] = useState('orders');
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
+  const [selectedDateFilter, setSelectedDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [products, setProducts] = useState(fakeProducts);
   const { toast } = useToast();
   const user = getCurrentUser();
 
   // Get factory-specific data
   const factoryOrders = getFactoryOrdersByFactory(user?.factoryId || 1);
-  const factoryProducts = fakeProducts.filter(p => 
+  const factoryProducts = products.filter(p => 
     user?.categories?.includes(p.category)
   );
 
+  // Date filtering helper function
+  const getDateFilteredOrders = (orders: any[]) => {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    switch (selectedDateFilter) {
+      case 'today':
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate.toDateString() === today.toDateString();
+        });
+      case 'yesterday':
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate.toDateString() === yesterday.toDateString();
+        });
+      case 'thisWeek':
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate >= weekStart;
+        });
+      case 'thisMonth':
+        return orders.filter(order => {
+          const orderDate = new Date(order.orderDate);
+          return orderDate.getMonth() === today.getMonth() && 
+                 orderDate.getFullYear() === today.getFullYear();
+        });
+      default:
+        return orders;
+    }
+  };
+
   // Filter orders based on selected criteria
-  const filteredOrders = factoryOrders.filter(order => {
+  const filteredOrders = getDateFilteredOrders(factoryOrders).filter(order => {
     const branchMatch = selectedBranch === 'all' || order.branchId.toString() === selectedBranch;
     const statusMatch = selectedStatus === 'all' || order.status === selectedStatus;
     const searchMatch = searchTerm === '' || 
@@ -52,18 +93,45 @@ const FactoryDashboard = () => {
     return branchMatch && statusMatch && searchMatch;
   });
 
-  const pendingOrders = getFactoryOrdersByStatus(user?.factoryId || 1, 'pending');
-  const packedOrders = getFactoryOrdersByStatus(user?.factoryId || 1, 'packed');
-  const totalRevenue = factoryOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  // Separate pending and packed orders
+  const pendingOrders = filteredOrders.filter(order => order.status === 'pending');
+  const packedOrders = filteredOrders.filter(order => order.status === 'packed');
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
 
   const markAsPacked = (orderId) => {
     const updatedOrder = updateFactoryOrderStatus(orderId, 'packed', user?.name || 'Factory Worker');
     if (updatedOrder) {
       toast({
-        title: "Order Marked as Packed",
-        description: `Order ${orderId} has been marked as packed successfully.`,
+        title: "Order Packed!",
+        description: `Order #${orderId} has been marked as packed and moved to Packed Orders.`,
       });
+      // Automatically switch to packed orders tab
+      setActiveTab('packed');
     }
+  };
+
+  const updateProductStock = (productId: number, newStock: number) => {
+    setProducts(prevProducts => 
+      prevProducts.map(product => 
+        product.id === productId 
+          ? { ...product, stock: newStock }
+          : product
+      )
+    );
+    
+    const product = products.find(p => p.id === productId);
+    toast({
+      title: "Stock Updated!",
+      description: `${product?.name} stock has been updated to ${newStock} units.`,
+    });
+  };
+
+  const markOutOfStock = (productId: number) => {
+    updateProductStock(productId, 0);
+  };
+
+  const restockProduct = (productId: number) => {
+    updateProductStock(productId, 50); // Default restock to 50 units
   };
 
   const printOrder = (order) => {
@@ -129,36 +197,37 @@ const FactoryDashboard = () => {
     <Button
       variant={activeTab === id ? "default" : "ghost"}
       onClick={() => setActiveTab(id)}
-      className="flex items-center gap-2"
+      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 py-2"
     >
-      <Icon size={18} />
-      {label}
+      <Icon size={16} className="sm:w-4 sm:h-4" />
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sm:hidden">{label.split(' ')[0]}</span>
     </Button>
   );
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
             {user?.name} Dashboard
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             <Factory className="inline h-4 w-4 mr-1" />
             {user?.factoryType?.toUpperCase()} Factory - {user?.location}
           </p>
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pending Orders</p>
-                  <p className="text-2xl font-bold text-accent">{pendingOrders.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Pending Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-accent">{pendingOrders.length}</p>
                 </div>
-                <Clock className="h-8 w-8 text-accent" />
+                <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
               </div>
             </CardContent>
           </Card>
@@ -176,33 +245,34 @@ const FactoryDashboard = () => {
           </Card>
 
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                  <p className="text-2xl font-bold text-primary">₹{totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Filtered Revenue</p>
+                  <p className="text-lg sm:text-2xl font-bold text-primary">₹{totalRevenue.toLocaleString()}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-primary" />
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
-                  <p className="text-2xl font-bold text-primary">{factoryOrders.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Filtered Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{filteredOrders.length}</p>
                 </div>
-                <Package className="h-8 w-8 text-primary" />
+                <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-6 sm:mb-8">
           <TabButton id="orders" label="Orders" icon={Package} />
+          <TabButton id="packed" label="Packed" icon={CheckCircle} />
           <TabButton id="products" label="Products" icon={Package} />
           <TabButton id="analytics" label="Analytics" icon={TrendingUp} />
         </div>
@@ -216,7 +286,7 @@ const FactoryDashboard = () => {
                 <CardTitle>Order Filters</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Branch</label>
                     <select
@@ -249,6 +319,21 @@ const FactoryDashboard = () => {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium mb-2">Date Filter</label>
+                    <select
+                      value={selectedDateFilter}
+                      onChange={(e) => setSelectedDateFilter(e.target.value)}
+                      className="w-full p-2 border rounded-md"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="yesterday">Yesterday</option>
+                      <option value="thisWeek">This Week</option>
+                      <option value="thisMonth">This Month</option>
+                    </select>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium mb-2">Search</label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -266,6 +351,7 @@ const FactoryDashboard = () => {
                       onClick={() => {
                         setSelectedBranch('all');
                         setSelectedStatus('all');
+                        setSelectedDateFilter('all');
                         setSearchTerm('');
                       }}
                       variant="outline"
@@ -282,24 +368,38 @@ const FactoryDashboard = () => {
             {/* Orders List */}
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Factory Orders ({filteredOrders.length})</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Pending Orders ({pendingOrders.length})
+                  {selectedDateFilter !== 'all' && (
+                    <Badge variant="secondary" className="ml-2">
+                      {selectedDateFilter === 'today' ? 'Today' :
+                       selectedDateFilter === 'yesterday' ? 'Yesterday' :
+                       selectedDateFilter === 'thisWeek' ? 'This Week' :
+                       selectedDateFilter === 'thisMonth' ? 'This Month' : selectedDateFilter}
+                    </Badge>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {filteredOrders.map((order) => (
-                    <div key={order.id} className="border rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className="font-semibold">Order #{order.id}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            <MapPin className="inline h-4 w-4 mr-1" />
-                            {order.branchName} ({order.branchCode}) - {order.franchiseName}
+                  {pendingOrders.map((order) => (
+                    <div key={order.id} className="border rounded-lg p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm sm:text-base">Order #{order.id}</h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                            <MapPin className="inline h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <span className="font-semibold text-primary bg-primary/10 px-1 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm">
+                              {order.branchName} ({order.branchCode})
+                            </span>
+                            <span className="ml-1 sm:ml-2 block sm:inline mt-1 sm:mt-0">- {order.franchiseName}</span>
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                             Date: {order.orderDate} | Total: ₹{order.totalAmount}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                           <Badge variant={
                             order.status === 'pending' ? 'secondary' :
                             order.status === 'packed' ? 'default' :
@@ -311,18 +411,20 @@ const FactoryDashboard = () => {
                             size="sm"
                             variant="outline"
                             onClick={() => printOrder(order)}
+                            className="text-xs sm:text-sm"
                           >
-                            <Printer className="h-4 w-4 mr-2" />
-                            Print
+                            <Printer className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">Print</span>
                           </Button>
                           {order.status === 'pending' && (
                             <Button
                               size="sm"
                               onClick={() => markAsPacked(order.id)}
-                              className="bg-gradient-pink"
+                              className="bg-gradient-pink text-xs sm:text-sm"
                             >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Mark Packed
+                              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                              <span className="hidden sm:inline">Mark Packed</span>
+                              <span className="sm:hidden">Pack</span>
                             </Button>
                           )}
                         </div>
@@ -360,13 +462,101 @@ const FactoryDashboard = () => {
           </div>
         )}
 
+        {activeTab === 'packed' && (
+          <div className="space-y-6">
+            {/* Packed Orders List */}
+            <Card className="shadow-soft">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  Packed Orders ({packedOrders.length})
+                  {selectedDateFilter !== 'all' && (
+                    <Badge variant="secondary" className="ml-2">
+                      {selectedDateFilter === 'today' ? 'Today' :
+                       selectedDateFilter === 'yesterday' ? 'Yesterday' :
+                       selectedDateFilter === 'thisWeek' ? 'This Week' :
+                       selectedDateFilter === 'thisMonth' ? 'This Month' : selectedDateFilter}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {packedOrders.map((order) => (
+                    <div key={order.id} className="border rounded-lg p-4 bg-green-50 border-green-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold">Order #{order.id}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            <MapPin className="inline h-4 w-4 mr-1" />
+                            <span className="font-semibold text-primary bg-primary/10 px-2 py-1 rounded">
+                              {order.branchName} ({order.branchCode})
+                            </span>
+                            <span className="ml-2">- {order.franchiseName}</span>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Date: {order.orderDate} | Total: ₹{order.totalAmount}
+                          </p>
+                          {order.packedDate && (
+                            <p className="text-sm text-green-600 font-medium">
+                              Packed on: {order.packedDate} by {order.packedBy}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="default" className="bg-green-600">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Packed
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => printOrder(order)}
+                          >
+                            <Printer className="h-4 w-4 mr-2" />
+                            Print
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h4 className="font-medium">Products:</h4>
+                        {order.products.map((product, index) => (
+                          <div key={index} className="flex justify-between items-center bg-secondary p-2 rounded">
+                            <span className="text-sm">{product.name}</span>
+                            <span className="text-sm font-medium">
+                              Qty: {product.quantity} × ₹{product.price} = ₹{product.price * product.quantity}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {order.notes && (
+                        <div className="mt-3 p-2 bg-accent/10 rounded">
+                          <p className="text-sm"><strong>Notes:</strong> {order.notes}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {packedOrders.length === 0 && (
+                    <div className="text-center py-8">
+                      <CheckCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No packed orders found.</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {activeTab === 'products' && (
           <Card className="shadow-soft">
             <CardHeader>
               <CardTitle>Factory Products - {user?.categories?.join(', ')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {factoryProducts.map((product) => (
                   <Card key={product.id} className="shadow-soft hover:shadow-warm transition-shadow">
                     <CardContent className="p-4">
@@ -385,8 +575,48 @@ const FactoryDashboard = () => {
                           {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
                         </Badge>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground mb-4">
                         Sold: {product.sold} units
+                      </div>
+                      
+                      {/* Stock Management Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {product.stock > 0 ? (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => markOutOfStock(product.id)}
+                            className="flex-1 text-xs sm:text-sm"
+                          >
+                            <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <span className="hidden sm:inline">Mark Out of Stock</span>
+                            <span className="sm:hidden">Out of Stock</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => restockProduct(product.id)}
+                            className="flex-1 text-xs sm:text-sm"
+                          >
+                            <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                            <span className="hidden sm:inline">Restock (50 units)</span>
+                            <span className="sm:hidden">Restock</span>
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const newStock = prompt(`Enter new stock quantity for ${product.name}:`, product.stock.toString());
+                            if (newStock !== null && !isNaN(Number(newStock)) && Number(newStock) >= 0) {
+                              updateProductStock(product.id, Number(newStock));
+                            }
+                          }}
+                          className="text-xs sm:text-sm"
+                        >
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -397,7 +627,12 @@ const FactoryDashboard = () => {
         )}
 
         {activeTab === 'analytics' && (
-          <FactoryAnalytics factoryId={user?.factoryId} factoryType={user?.factoryType} />
+          <FactoryAnalytics 
+            factoryId={user?.factoryId} 
+            factoryType={user?.factoryType}
+            selectedBranch={selectedBranch}
+            selectedDateFilter={selectedDateFilter}
+          />
         )}
       </div>
     </div>

@@ -27,11 +27,60 @@ import { sendApprovalNotification } from '../utils/emailService';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState('month');
+
+  // Update time period when switching to analytics tab
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+    if (tabId === 'analytics' && selectedTimePeriod !== 'all') {
+      setSelectedTimePeriod('all');
+    } else if (tabId !== 'analytics' && selectedTimePeriod === 'all') {
+      setSelectedTimePeriod('month');
+    }
+  };
   const [products, setProducts] = useState(fakeProducts);
   const [users, setUsers] = useState(fakeUsers);
   const [orders] = useState(fakeOrders);
   const [factoryOrders] = useState(fakeFactoryOrders);
   const { toast } = useToast();
+
+  // Time period filtering function
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getTimeFilteredData = (data: any[]): any[] => {
+    const now = new Date();
+    
+    switch (selectedTimePeriod) {
+      case 'all':
+        return data; // Return all data without filtering
+        
+      case 'week': {
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        return data.filter(item => new Date(item.date || item.orderDate) >= weekAgo);
+      }
+        
+      case 'month':
+        return data.filter(item => {
+          const itemDate = new Date(item.date || item.orderDate);
+          return itemDate.getMonth() === now.getMonth() && 
+                 itemDate.getFullYear() === now.getFullYear();
+        });
+        
+      case 'quarter': {
+        const quarterStart = new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1);
+        return data.filter(item => new Date(item.date || item.orderDate) >= quarterStart);
+      }
+        
+      case 'year':
+        return data.filter(item => {
+          const itemDate = new Date(item.date || item.orderDate);
+          return itemDate.getFullYear() === now.getFullYear();
+        });
+        
+      default:
+        return data;
+    }
+  };
 
   const approveUser = async (userId: number) => {
     const user = users.find(u => u.id === userId);
@@ -94,91 +143,142 @@ const AdminDashboard = () => {
     }
   };
 
-  const totalRevenue = factoryOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+  const totalRevenue = getTimeFilteredData(factoryOrders).reduce((sum, order) => sum + order.totalAmount, 0);
   const pendingUsers = users.filter(user => !user.approved && user.role === 'user').length;
   const outOfStockProducts = products.filter(product => product.stock === 0).length;
-  const totalFactoryOrders = factoryOrders.length;
-  const pendingFactoryOrders = factoryOrders.filter(order => order.status === 'pending').length;
+  const totalFactoryOrders = getTimeFilteredData(factoryOrders).length;
+  const pendingFactoryOrders = getTimeFilteredData(factoryOrders).filter(order => order.status === 'pending').length;
 
   const TabButton = ({ id, label, icon: Icon }: { id: string; label: string; icon: LucideIcon }) => (
     <Button
       variant={activeTab === id ? "default" : "ghost"}
-      onClick={() => setActiveTab(id)}
-      className="flex items-center gap-2"
+      onClick={() => handleTabChange(id)}
+      className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4 py-2"
     >
-      <Icon size={18} />
-      {label}
+      <Icon size={16} className="sm:w-4 sm:h-4" />
+      <span className="hidden sm:inline">{label}</span>
+      <span className="sm:hidden">{label.split(' ')[0]}</span>
     </Button>
   );
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage your Karachi Bakery franchise network</p>
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Admin Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage your Karachi Bakery franchise network</p>
         </div>
 
         {/* Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Revenue</p>
-                  <p className="text-2xl font-bold text-primary">₹{totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total Revenue</p>
+                  <p className="text-lg sm:text-2xl font-bold text-primary">₹{totalRevenue.toLocaleString()}</p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-primary" />
+                <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Products</p>
-                  <p className="text-2xl font-bold text-primary">{products.length}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total Products</p>
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{products.length}</p>
                 </div>
-                <Package className="h-8 w-8 text-primary" />
+                <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Factory Orders</p>
-                  <p className="text-2xl font-bold text-primary">{totalFactoryOrders}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Total Factory Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-primary">{totalFactoryOrders}</p>
                 </div>
-                <Package className="h-8 w-8 text-primary" />
+                <Package className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="shadow-soft">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pending Factory Orders</p>
-                  <p className="text-2xl font-bold text-accent">{pendingFactoryOrders}</p>
+                  <p className="text-xs sm:text-sm font-medium text-muted-foreground">Pending Factory Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-accent">{pendingFactoryOrders}</p>
                 </div>
-                <Clock className="h-8 w-8 text-accent" />
+                <Clock className="h-6 w-6 sm:h-8 sm:w-8 text-accent" />
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-6 sm:mb-8">
           <TabButton id="overview" label="Overview" icon={TrendingUp} />
           <TabButton id="orders" label="All Orders" icon={Package} />
           <TabButton id="products" label="Products" icon={Package} />
-          <TabButton id="users" label="User Management" icon={Users} />
+          <TabButton id="users" label="Users" icon={Users} />
           <TabButton id="register" label="Add Franchise" icon={Plus} />
           <TabButton id="analytics" label="Analytics" icon={TrendingUp} />
         </div>
+
+        {/* Time Period Filter */}
+        {(activeTab === 'analytics' || activeTab === 'orders' || activeTab === 'overview') && (
+          <Card className="shadow-soft mb-4 sm:mb-6">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  <h3 className="text-sm sm:text-lg font-semibold">
+                    {activeTab === 'analytics' ? 'All Time Analytics Filter:' : 'Time Period Filter:'}
+                  </h3>
+                </div>
+                <select
+                  value={selectedTimePeriod}
+                  onChange={(e) => setSelectedTimePeriod(e.target.value)}
+                  className="p-2 border rounded-md bg-background text-sm"
+                >
+                  {activeTab === 'analytics' ? (
+                    <>
+                      <option value="all">All Time</option>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="quarter">This Quarter</option>
+                      <option value="year">This Year</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="quarter">This Quarter</option>
+                      <option value="year">This Year</option>
+                    </>
+                  )}
+                </select>
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {activeTab === 'analytics' ? (
+                    `Showing analytics for: ${selectedTimePeriod === 'all' ? 'All Time' :
+                     selectedTimePeriod === 'week' ? 'This Week' :
+                     selectedTimePeriod === 'month' ? 'This Month' :
+                     selectedTimePeriod === 'quarter' ? 'This Quarter' : 'This Year'}`
+                  ) : (
+                    `Showing data for: ${selectedTimePeriod === 'week' ? 'This Week' :
+                     selectedTimePeriod === 'month' ? 'This Month' :
+                     selectedTimePeriod === 'quarter' ? 'This Quarter' : 'This Year'}`
+                  )}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tab Content */}
         {activeTab === 'overview' && (
@@ -202,7 +302,7 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {factoryOrders.slice(0, 5).map((order) => (
+                  {getTimeFilteredData(factoryOrders).slice(0, 5).map((order) => (
                     <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <p className="font-medium">{order.factoryName}</p>
@@ -233,7 +333,7 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {factoryOrders.map((order) => (
+                {getTimeFilteredData(factoryOrders).map((order) => (
                   <div key={order.id} className="border rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -275,6 +375,12 @@ const AdminDashboard = () => {
                     )}
                   </div>
                 ))}
+                {getTimeFilteredData(factoryOrders).length === 0 && (
+                  <div className="text-center py-8">
+                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No orders found for this time period.</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -330,7 +436,7 @@ const AdminDashboard = () => {
           </Card>
         )}
 
-        {activeTab === 'analytics' && <AnalyticsDashboard />}
+        {activeTab === 'analytics' && <AnalyticsDashboard selectedTimePeriod={selectedTimePeriod} />}
 
         {activeTab === 'register' && (
           <Card className="shadow-soft">
