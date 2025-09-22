@@ -52,6 +52,12 @@ const Navbar = () => {
                     <Button variant="ghost">My Dashboard</Button>
                   </Link>
                 )}
+                
+                {user.role === 'factory' && (
+                  <Link to="/factory">
+                    <Button variant="ghost">Factory Dashboard</Button>
+                  </Link>
+                )}
 
                 <div className="flex items-center space-x-2">
                   <div className="hidden md:flex items-center space-x-2">

@@ -62,5 +62,45 @@ export const fakeProducts = [
     image: breadsImage,
     description: "Assorted pastries perfect for parties",
     sold: 78
+  },
+  {
+    id: 7,
+    name: "Premium Chocolate Box",
+    price: 750,
+    stock: 20,
+    category: "Chocolate",
+    image: biscuitsImage,
+    description: "Assorted premium chocolates in elegant packaging",
+    sold: 95
+  },
+  {
+    id: 8,
+    name: "Namkeen Mix",
+    price: 320,
+    stock: 30,
+    category: "Namkeen",
+    image: breadsImage,
+    description: "Traditional namkeen mix with various snacks",
+    sold: 120
+  },
+  {
+    id: 9,
+    name: "Sweet Box (1kg)",
+    price: 450,
+    stock: 18,
+    category: "Sweets",
+    image: cakesImage,
+    description: "Assorted traditional sweets by weight",
+    sold: 85
+  },
+  {
+    id: 10,
+    name: "Gift Hamper Premium",
+    price: 1200,
+    stock: 10,
+    category: "Gift Hampers",
+    image: biscuitsImage,
+    description: "Premium gift hamper with assorted products",
+    sold: 35
   }
 ];

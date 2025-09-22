@@ -1,3 +1,4 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,6 +10,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import AdminDashboard from "./components/AdminDashboard";
 import UserDashboard from "./components/UserDashboard";
+import FactoryDashboard from "./components/FactoryDashboard";
 import Navbar from "./components/Navbar";
 import { getCurrentUser } from "./utils/auth";
 
@@ -54,6 +56,14 @@ const App = () => (
               element={
                 <ProtectedRoute requiredRole="user">
                   <UserDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/factory" 
+              element={
+                <ProtectedRoute requiredRole="factory">
+                  <FactoryDashboard />
                 </ProtectedRoute>
               } 
             />

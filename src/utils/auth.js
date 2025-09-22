@@ -1,7 +1,9 @@
 import { fakeUsers } from '../data/users';
+import { factories } from '../data/factories';
 
 // Authentication utilities using localStorage for prototype
 export const login = (email, password) => {
+  // Check regular users first
   const user = fakeUsers.find(
     (u) => u.email === email && u.password === password && u.approved
   );
@@ -17,6 +19,27 @@ export const login = (email, password) => {
   
   if (unApprovedUser) {
     return { success: false, message: "Your account is pending admin approval." };
+  }
+
+  // Check factory users
+  const factory = factories.find(
+    (f) => f.email === email && f.password === password
+  );
+  
+  if (factory) {
+    const factoryUser = {
+      id: factory.id,
+      name: factory.name,
+      email: factory.email,
+      role: "factory",
+      factoryType: factory.type,
+      factoryId: factory.id,
+      location: factory.location,
+      categories: factory.categories,
+      branches: factory.branches
+    };
+    localStorage.setItem("user", JSON.stringify(factoryUser));
+    return { success: true, user: factoryUser };
   }
   
   return { success: false, message: "Invalid email or password." };

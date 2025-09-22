@@ -8,6 +8,8 @@ import { getCurrentUser } from '../utils/auth';
 import { fakeProducts } from '../data/products';
 import { fakeOrders, generateOrderId } from '../data/orders';
 import { sendOrderNotification } from '../utils/emailService';
+import { getFactoryForCategory, getFactoriesForCategory } from '../data/factories';
+import { generateFactoryOrderId } from '../data/factoryOrders';
 import { 
   ShoppingCart, 
   Package, 
@@ -95,6 +97,56 @@ const UserDashboard = () => {
     const orderId = generateOrderId();
     const currentDate = new Date().toISOString().split('T')[0];
     
+    // Group cart items by category for factory routing
+    const ordersByCategory = cart.reduce((acc, item) => {
+      const product = products.find(p => p.id === item.id);
+      if (product) {
+        const category = product.category;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(item);
+      }
+      return acc;
+    }, {});
+
+    // Create factory orders for each category
+    const factoryOrders = [];
+    Object.entries(ordersByCategory).forEach(([category, items]) => {
+      const factory = getFactoryForCategory(category);
+      if (factory) {
+        const factoryOrderId = generateFactoryOrderId();
+        const categoryTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        factoryOrders.push({
+          id: factoryOrderId,
+          originalOrderId: orderId,
+          factoryId: factory.id,
+          factoryName: factory.name,
+          factoryType: factory.type,
+          branchId: 1, // Default branch - in real app, this would be based on user location
+          branchName: factory.branches[0].name,
+          branchCode: factory.branches[0].code,
+          franchiseId: user?.id,
+          franchiseName: user?.name,
+          franchiseLocation: user?.location || 'Unknown Location',
+          products: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            category: category
+          })),
+          totalAmount: categoryTotal,
+          orderDate: currentDate,
+          status: 'pending',
+          packedDate: null,
+          packedBy: null,
+          notes: `Order from ${user?.name} - ${user?.location}`
+        });
+      }
+    });
+    
     // Create new order for user's order history
     const newOrder = {
       id: orderId,
@@ -117,12 +169,12 @@ const UserDashboard = () => {
     };
 
     try {
-      // Send order notification email to admin
+      // Send order notification email to relevant factories
       await sendOrderNotification(orderData);
       
       toast({
         title: "Order Placed Successfully!",
-        description: `Order #${orderId} for ₹${getTotalAmount()} has been placed. Admin has been notified via email.`,
+        description: `Order #${orderId} for ₹${getTotalAmount()} has been placed and routed to ${factoryOrders.length} factory(ies).`,
       });
     } catch (emailError) {
       console.error('Failed to send order notification:', emailError);

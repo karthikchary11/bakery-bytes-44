@@ -7,6 +7,7 @@ import { useToast } from '../hooks/use-toast';
 import { fakeProducts } from '../data/products';
 import { fakeUsers } from '../data/users';
 import { fakeOrders } from '../data/orders';
+import { fakeFactoryOrders } from '../data/factoryOrders';
 import { 
   Package, 
   Users, 
@@ -16,7 +17,9 @@ import {
   Plus,
   Eye,
   Edit,
-  Trash2
+  Trash2,
+  Clock,
+  LucideIcon
 } from 'lucide-react';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import ProductManagement from './ProductManagement';
@@ -27,6 +30,7 @@ const AdminDashboard = () => {
   const [products, setProducts] = useState(fakeProducts);
   const [users, setUsers] = useState(fakeUsers);
   const [orders] = useState(fakeOrders);
+  const [factoryOrders] = useState(fakeFactoryOrders);
   const { toast } = useToast();
 
   const approveUser = async (userId: number) => {
@@ -90,11 +94,13 @@ const AdminDashboard = () => {
     }
   };
 
-  const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const totalRevenue = factoryOrders.reduce((sum, order) => sum + order.totalAmount, 0);
   const pendingUsers = users.filter(user => !user.approved && user.role === 'user').length;
   const outOfStockProducts = products.filter(product => product.stock === 0).length;
+  const totalFactoryOrders = factoryOrders.length;
+  const pendingFactoryOrders = factoryOrders.filter(order => order.status === 'pending').length;
 
-  const TabButton = ({ id, label, icon: Icon }: { id: string; label: string; icon: any }) => (
+  const TabButton = ({ id, label, icon: Icon }: { id: string; label: string; icon: LucideIcon }) => (
     <Button
       variant={activeTab === id ? "default" : "ghost"}
       onClick={() => setActiveTab(id)}
@@ -143,10 +149,10 @@ const AdminDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Franchises</p>
-                  <p className="text-2xl font-bold text-primary">{users.filter(u => u.approved && u.role === 'user').length}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total Factory Orders</p>
+                  <p className="text-2xl font-bold text-primary">{totalFactoryOrders}</p>
                 </div>
-                <Users className="h-8 w-8 text-primary" />
+                <Package className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -155,10 +161,10 @@ const AdminDashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pending Approvals</p>
-                  <p className="text-2xl font-bold text-accent">{pendingUsers}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Pending Factory Orders</p>
+                  <p className="text-2xl font-bold text-accent">{pendingFactoryOrders}</p>
                 </div>
-                <XCircle className="h-8 w-8 text-accent" />
+                <Clock className="h-8 w-8 text-accent" />
               </div>
             </CardContent>
           </Card>
@@ -167,6 +173,7 @@ const AdminDashboard = () => {
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
           <TabButton id="overview" label="Overview" icon={TrendingUp} />
+          <TabButton id="orders" label="All Orders" icon={Package} />
           <TabButton id="products" label="Products" icon={Package} />
           <TabButton id="users" label="User Management" icon={Users} />
           <TabButton id="register" label="Add Franchise" icon={Plus} />
@@ -191,19 +198,23 @@ const AdminDashboard = () => {
 
             <Card className="shadow-soft">
               <CardHeader>
-                <CardTitle>Recent Orders</CardTitle>
+                <CardTitle>Recent Factory Orders</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {orders.slice(0, 5).map((order) => (
+                  {factoryOrders.slice(0, 5).map((order) => (
                     <div key={order.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
-                        <p className="font-medium">{order.productName}</p>
-                        <p className="text-sm text-muted-foreground">{order.franchiseLocation}</p>
+                        <p className="font-medium">{order.factoryName}</p>
+                        <p className="text-sm text-muted-foreground">{order.branchName} - {order.franchiseName}</p>
+                        <p className="text-sm text-muted-foreground">{order.products.map(p => p.name).join(', ')}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">₹{order.total}</p>
-                        <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>
+                        <p className="font-medium">₹{order.totalAmount}</p>
+                        <Badge variant={
+                          order.status === 'packed' ? 'default' :
+                          order.status === 'pending' ? 'secondary' : 'outline'
+                        }>
                           {order.status}
                         </Badge>
                       </div>
@@ -213,6 +224,60 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {activeTab === 'orders' && (
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle>All Factory Orders</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {factoryOrders.map((order) => (
+                  <div key={order.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <h3 className="font-semibold">Order #{order.id}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Factory: {order.factoryName} | Branch: {order.branchName} ({order.branchCode})
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Franchise: {order.franchiseName} - {order.franchiseLocation}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Date: {order.orderDate} | Total: ₹{order.totalAmount}
+                        </p>
+                      </div>
+                      <Badge variant={
+                        order.status === 'packed' ? 'default' :
+                        order.status === 'pending' ? 'secondary' : 'outline'
+                      }>
+                        {order.status}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <h4 className="font-medium">Products:</h4>
+                      {order.products.map((product, index) => (
+                        <div key={index} className="flex justify-between items-center bg-secondary p-2 rounded">
+                          <span className="text-sm">{product.name}</span>
+                          <span className="text-sm font-medium">
+                            Qty: {product.quantity} × ₹{product.price} = ₹{product.price * product.quantity}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {order.notes && (
+                      <div className="mt-3 p-2 bg-accent/10 rounded">
+                        <p className="text-sm"><strong>Notes:</strong> {order.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {activeTab === 'products' && (

@@ -40,6 +40,8 @@ const Login = () => {
         // Redirect based on role
         if (result.user.role === 'admin') {
           navigate('/admin');
+        } else if (result.user.role === 'factory') {
+          navigate('/factory');
         } else {
           navigate('/user');
         }
@@ -136,6 +138,7 @@ const Login = () => {
             <div className="text-sm space-y-1">
               <p><strong>Admin:</strong> admin@karachibakery.com / admin123</p>
               <p><strong>User:</strong> franchise1@karachibakery.com / franchise123</p>
+              <p><strong>Factory:</strong> chocolate@karachibakery.com / chocolate123</p>
             </div>
           </div>
 

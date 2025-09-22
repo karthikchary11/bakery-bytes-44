@@ -22,6 +22,8 @@ const Index = () => {
         navigate('/admin');
       } else if (user.role === 'user') {
         navigate('/user');
+      } else if (user.role === 'factory') {
+        navigate('/factory');
       }
     }
   }, [user, navigate]);
