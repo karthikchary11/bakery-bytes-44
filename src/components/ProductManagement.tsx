@@ -8,13 +8,33 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from '../hooks/use-toast';
 import { Plus, Eye, Edit, Trash2, Save, X } from 'lucide-react';
 
-const ProductManagement = ({ products, setProducts }: { products: any[], setProducts: (products: any[]) => void }) => {
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  stock: number;
+  category: string;
+  description?: string;
+  image?: string;
+  sold?: number;
+}
+
+interface ProductForm {
+  name: string;
+  price: string;
+  stock: string;
+  category: string;
+  description: string;
+  image: string;
+}
+
+const ProductManagement = ({ products, setProducts }: { products: Product[], setProducts: (products: Product[]) => void }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [viewingProduct, setViewingProduct] = useState<any>(null);
-  const [newProduct, setNewProduct] = useState({
+  const [editingProduct, setEditingProduct] = useState<ProductForm & { id?: number } | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
+  const [newProduct, setNewProduct] = useState<ProductForm>({
     name: '',
     price: '',
     stock: '',
@@ -69,7 +89,15 @@ const ProductManagement = ({ products, setProducts }: { products: any[], setProd
 
     const updatedProducts = products.map(p => 
       p.id === editingProduct.id 
-        ? { ...editingProduct, price: parseFloat(editingProduct.price), stock: parseInt(editingProduct.stock) }
+        ? { 
+            id: editingProduct.id,
+            name: editingProduct.name,
+            price: parseFloat(editingProduct.price),
+            stock: parseInt(editingProduct.stock),
+            category: editingProduct.category,
+            description: editingProduct.description,
+            image: editingProduct.image
+          }
         : p
     );
     
@@ -93,12 +121,20 @@ const ProductManagement = ({ products, setProducts }: { products: any[], setProd
     });
   };
 
-  const openEditModal = (product: any) => {
-    setEditingProduct({ ...product });
+  const openEditModal = (product: Product) => {
+    setEditingProduct({
+      id: product.id,
+      name: product.name,
+      price: product.price.toString(),
+      stock: product.stock.toString(),
+      category: product.category,
+      description: product.description || '',
+      image: product.image || ''
+    });
     setIsEditModalOpen(true);
   };
 
-  const openViewModal = (product: any) => {
+  const openViewModal = (product: Product) => {
     setViewingProduct(product);
     setIsViewModalOpen(true);
   };

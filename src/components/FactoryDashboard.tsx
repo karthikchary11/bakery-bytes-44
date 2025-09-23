@@ -69,16 +69,17 @@ const FactoryDashboard = () => {
   const factoryProducts = products; // Use state for dynamic updates
 
   // Date filtering helper function
-  const getDateFilteredOrders = (orders: any[]) => {
+  const getDateFilteredOrders = (orders: {id: string; factoryId: number; factoryName: string; factoryType: string; branchId: number; branchName: string; branchCode: string; franchiseId: number; franchiseName: string; franchiseLocation: string; products: {id: number; name: string; quantity: number; price: number; category: string}[]; totalAmount: number; orderDate: string; status: string; packedDate: string | null; packedBy: string | null}[]) => {
     switch (selectedDateFilter) {
       case 'today':
         return getTodayOrders();
       case 'yesterday':
         return getYesterdayOrders();
-      case 'thisWeek':
+      case 'thisWeek': {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         return getFactoryOrdersByDateRange(weekAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
+      }
       case 'thisMonth':
         return orders; // All orders are from this month in our data
       default:
@@ -115,10 +116,7 @@ const FactoryDashboard = () => {
   };
 
   const openStockModal = (product) => {
-    console.log('openStockModal called with product:', product);
-    
     if (!product || !product.id) {
-      console.log('Invalid product passed to openStockModal');
       toast({
         title: "Error",
         description: "Invalid product information. Please try again.",
@@ -130,14 +128,10 @@ const FactoryDashboard = () => {
     setSelectedProduct(product);
     setNewStockValue(product.stock?.toString() || '0');
     setShowStockModal(true);
-    console.log('Modal should be open now');
   };
 
   const updateProductStock = () => {
-    console.log('updateProductStock called', { selectedProduct, newStockValue });
-    
     if (!selectedProduct || !newStockValue || !selectedProduct.id) {
-      console.log('Missing selectedProduct, newStockValue, or product ID');
       toast({
         title: "Error",
         description: "Product information is missing. Please try again.",
@@ -147,7 +141,6 @@ const FactoryDashboard = () => {
     }
     
     const newStock = parseInt(newStockValue);
-    console.log('Parsed newStock:', newStock);
     
     if (isNaN(newStock) || newStock < 0) {
       toast({
@@ -158,14 +151,12 @@ const FactoryDashboard = () => {
       return;
     }
 
-    console.log('Updating products state...');
     setProducts(prevProducts => {
       const updatedProducts = prevProducts.map(product => 
         product.id === selectedProduct.id 
           ? { ...product, stock: newStock }
           : product
       );
-      console.log('Updated products:', updatedProducts);
       return updatedProducts;
     });
     
@@ -178,7 +169,6 @@ const FactoryDashboard = () => {
     setShowStockModal(false);
     setSelectedProduct(null);
     setNewStockValue('');
-    console.log('Modal closed and reset');
   };
 
   const markOutOfStock = (productId: number) => {
@@ -258,6 +248,7 @@ const FactoryDashboard = () => {
     printWindow.print();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const TabButton = ({ id, label, icon: Icon }: { id: string; label: string; icon: any }) => (
     <Button
       variant={activeTab === id ? "default" : "ghost"}
@@ -672,10 +663,7 @@ const FactoryDashboard = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
-                            console.log('Edit button clicked for product:', product);
-                            openStockModal(product);
-                          }}
+                          onClick={() => openStockModal(product)}
                           className="text-xs sm:text-sm"
                         >
                           <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -699,7 +687,6 @@ const FactoryDashboard = () => {
         )}
 
         {/* Stock Update Modal */}
-        {console.log('Modal render check:', { showStockModal, selectedProduct })}
         {showStockModal && selectedProduct && (
           <div className="fixed inset-0 z-50 overflow-hidden">
             <div className="absolute inset-0 bg-black/50" onClick={() => setShowStockModal(false)} />

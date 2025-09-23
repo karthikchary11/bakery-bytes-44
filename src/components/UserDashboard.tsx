@@ -49,7 +49,7 @@ const UserDashboard = () => {
   const [showCart, setShowCart] = useState(false);
   const [favorites, setFavorites] = useState<number[]>([]);
   const [showBiscuitFactoryModal, setShowBiscuitFactoryModal] = useState(false);
-  const [pendingBiscuitProduct, setPendingBiscuitProduct] = useState<any>(null);
+  const [pendingBiscuitProduct, setPendingBiscuitProduct] = useState<{id: number; name: string; price: number; category: string; image: string} | null>(null);
   const [biscuitFactorySelections, setBiscuitFactorySelections] = useState<Record<number, number>>({});
   const [showOrderSummaryModal, setShowOrderSummaryModal] = useState(false);
   const [showOrderHistory, setShowOrderHistory] = useState(false);
@@ -80,7 +80,7 @@ const UserDashboard = () => {
       }
     });
 
-  const addToCart = (product: any) => {
+  const addToCart = (product: {id: number; name: string; price: number; category: string; image: string}) => {
     // Check if it's a biscuit product and no factory is selected for this specific product
     if (product.category === 'Biscuits' && !biscuitFactorySelections[product.id]) {
       setPendingBiscuitProduct(product);
@@ -137,7 +137,7 @@ const UserDashboard = () => {
         acc[category].push({ ...item, category });
       }
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, {id: number; name: string; price: number; category: string; quantity: number; image: string}[]>);
 
     return grouped;
   };
@@ -260,7 +260,7 @@ const UserDashboard = () => {
     Object.entries(ordersByCategory).forEach(([category, items]) => {
       if (category === 'Biscuits') {
         // For biscuits, group by selected factory
-        const itemsByFactory = items.reduce((acc, item) => {
+        const itemsByFactory = (items as {id: number; name: string; price: number; category: string; quantity: number; image: string}[]).reduce((acc, item) => {
           const factoryId = biscuitFactorySelections[item.id];
           if (factoryId) {
             if (!acc[factoryId]) {
@@ -269,14 +269,14 @@ const UserDashboard = () => {
             acc[factoryId].push(item);
           }
           return acc;
-        }, {} as Record<number, any[]>);
+        }, {} as Record<number, {id: number; name: string; price: number; category: string; quantity: number; image: string}[]>);
 
         // Create separate orders for each factory
         Object.entries(itemsByFactory).forEach(([factoryId, factoryItems]) => {
           const factory = getBiscuitFactories().find(f => f.id === parseInt(factoryId));
           if (factory) {
             const factoryOrderId = generateFactoryOrderId();
-            const categoryTotal = factoryItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const categoryTotal = (factoryItems as {id: number; name: string; price: number; category: string; quantity: number; image: string}[]).reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
             factoryOrders.push({
               id: factoryOrderId,
@@ -290,7 +290,7 @@ const UserDashboard = () => {
               franchiseId: user?.id,
               franchiseName: user?.name,
               franchiseLocation: user?.location || 'Unknown Location',
-              products: factoryItems.map(item => ({
+              products: (factoryItems as {id: number; name: string; price: number; category: string; quantity: number; image: string}[]).map(item => ({
                 id: item.id,
                 name: item.name,
                 quantity: item.quantity,
@@ -311,7 +311,7 @@ const UserDashboard = () => {
         const factory = getFactoryForCategory(category);
         if (factory) {
           const factoryOrderId = generateFactoryOrderId();
-          const categoryTotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+          const categoryTotal = (items as {id: number; name: string; price: number; category: string; quantity: number; image: string}[]).reduce((sum, item) => sum + (item.price * item.quantity), 0);
           
           factoryOrders.push({
             id: factoryOrderId,
@@ -325,7 +325,7 @@ const UserDashboard = () => {
             franchiseId: user?.id,
             franchiseName: user?.name,
             franchiseLocation: user?.location || 'Unknown Location',
-            products: items.map(item => ({
+            products: (items as {id: number; name: string; price: number; category: string; quantity: number; image: string}[]).map(item => ({
               id: item.id,
               name: item.name,
               quantity: item.quantity,
@@ -461,13 +461,13 @@ const UserDashboard = () => {
             <div className="flex gap-1 sm:gap-2 min-w-max">
               {categories.map((category) => (
                 <Button
-                  key={category}
+                  key={category as string}
                   variant={selectedCategory === category ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(category as string)}
                   className="whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2"
                 >
-                  {category === 'all' ? 'All' : category}
+                  {category === 'all' ? 'All' : category as string}
                 </Button>
               ))}
             </div>
