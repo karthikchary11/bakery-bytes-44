@@ -13,6 +13,14 @@ import {
   updateFactoryOrderStatus 
 } from '../data/factoryOrders';
 import { 
+  factoryDashboardData, 
+  getFactoryOrdersByDateRange, 
+  getTodayOrders, 
+  getYesterdayOrders, 
+  getLowStockProducts,
+  getAnalyticsByPeriod 
+} from '../data/factoryDashboardData';
+import { 
   Package, 
   Users, 
   TrendingUp, 
@@ -27,56 +35,52 @@ import {
   Calendar,
   CalendarDays,
   XCircle,
-  Edit
+  Edit,
+  X
 } from 'lucide-react';
 import FactoryAnalytics from './FactoryAnalytics';
 
 const FactoryDashboard = () => {
+  // Use comprehensive factory data first
+  const factory = factoryDashboardData.factory;
+  const allOrders = factoryDashboardData.factoryOrders;
+  const factoryProductsData = factoryDashboardData.factoryProducts;
+  
   const [activeTab, setActiveTab] = useState('orders');
   const [selectedBranch, setSelectedBranch] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedDateFilter, setSelectedDateFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [products, setProducts] = useState(fakeProducts);
+  const [showStockModal, setShowStockModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newStockValue, setNewStockValue] = useState('');
+  const [products, setProducts] = useState(factoryProductsData);
   const { toast } = useToast();
   const user = getCurrentUser();
 
+  // Simple test to see if component renders
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+  const analytics = factoryDashboardData.analytics;
+
   // Get factory-specific data
-  const factoryOrders = getFactoryOrdersByFactory(user?.factoryId || 1);
-  const factoryProducts = products.filter(p => 
-    user?.categories?.includes(p.category)
-  );
+  const factoryOrders = allOrders; // Use comprehensive data
+  const factoryProducts = products; // Use state for dynamic updates
 
   // Date filtering helper function
   const getDateFilteredOrders = (orders: any[]) => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
     switch (selectedDateFilter) {
       case 'today':
-        return orders.filter(order => {
-          const orderDate = new Date(order.orderDate);
-          return orderDate.toDateString() === today.toDateString();
-        });
+        return getTodayOrders();
       case 'yesterday':
-        return orders.filter(order => {
-          const orderDate = new Date(order.orderDate);
-          return orderDate.toDateString() === yesterday.toDateString();
-        });
+        return getYesterdayOrders();
       case 'thisWeek':
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
-        return orders.filter(order => {
-          const orderDate = new Date(order.orderDate);
-          return orderDate >= weekStart;
-        });
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return getFactoryOrdersByDateRange(weekAgo.toISOString().split('T')[0], new Date().toISOString().split('T')[0]);
       case 'thisMonth':
-        return orders.filter(order => {
-          const orderDate = new Date(order.orderDate);
-          return orderDate.getMonth() === today.getMonth() && 
-                 orderDate.getFullYear() === today.getFullYear();
-        });
+        return orders; // All orders are from this month in our data
       default:
         return orders;
     }
@@ -93,7 +97,7 @@ const FactoryDashboard = () => {
     return branchMatch && statusMatch && searchMatch;
   });
 
-  // Separate pending and packed orders
+  // Calculate overview stats using analytics data
   const pendingOrders = filteredOrders.filter(order => order.status === 'pending');
   const packedOrders = filteredOrders.filter(order => order.status === 'packed');
   const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
@@ -110,28 +114,89 @@ const FactoryDashboard = () => {
     }
   };
 
-  const updateProductStock = (productId: number, newStock: number) => {
-    setProducts(prevProducts => 
-      prevProducts.map(product => 
-        product.id === productId 
+  const openStockModal = (product) => {
+    console.log('openStockModal called with product:', product);
+    
+    if (!product || !product.id) {
+      console.log('Invalid product passed to openStockModal');
+      toast({
+        title: "Error",
+        description: "Invalid product information. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSelectedProduct(product);
+    setNewStockValue(product.stock?.toString() || '0');
+    setShowStockModal(true);
+    console.log('Modal should be open now');
+  };
+
+  const updateProductStock = () => {
+    console.log('updateProductStock called', { selectedProduct, newStockValue });
+    
+    if (!selectedProduct || !newStockValue || !selectedProduct.id) {
+      console.log('Missing selectedProduct, newStockValue, or product ID');
+      toast({
+        title: "Error",
+        description: "Product information is missing. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const newStock = parseInt(newStockValue);
+    console.log('Parsed newStock:', newStock);
+    
+    if (isNaN(newStock) || newStock < 0) {
+      toast({
+        title: "Invalid Input",
+        description: "Please enter a valid stock quantity.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Updating products state...');
+    setProducts(prevProducts => {
+      const updatedProducts = prevProducts.map(product => 
+        product.id === selectedProduct.id 
           ? { ...product, stock: newStock }
           : product
-      )
-    );
+      );
+      console.log('Updated products:', updatedProducts);
+      return updatedProducts;
+    });
     
-    const product = products.find(p => p.id === productId);
     toast({
       title: "Stock Updated!",
-      description: `${product?.name} stock has been updated to ${newStock} units.`,
+      description: `${selectedProduct.name} stock has been updated to ${newStock} units.`,
     });
+    
+    // Close modal and reset
+    setShowStockModal(false);
+    setSelectedProduct(null);
+    setNewStockValue('');
+    console.log('Modal closed and reset');
   };
 
   const markOutOfStock = (productId: number) => {
-    updateProductStock(productId, 0);
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      setSelectedProduct(product);
+      setNewStockValue('0');
+      setShowStockModal(true);
+    }
   };
 
   const restockProduct = (productId: number) => {
-    updateProductStock(productId, 50); // Default restock to 50 units
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      setSelectedProduct(product);
+      setNewStockValue('50'); // Default restock to 50 units
+      setShowStockModal(true);
+    }
   };
 
   const printOrder = (order) => {
@@ -608,10 +673,8 @@ const FactoryDashboard = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            const newStock = prompt(`Enter new stock quantity for ${product.name}:`, product.stock.toString());
-                            if (newStock !== null && !isNaN(Number(newStock)) && Number(newStock) >= 0) {
-                              updateProductStock(product.id, Number(newStock));
-                            }
+                            console.log('Edit button clicked for product:', product);
+                            openStockModal(product);
                           }}
                           className="text-xs sm:text-sm"
                         >
@@ -633,6 +696,71 @@ const FactoryDashboard = () => {
             selectedBranch={selectedBranch}
             selectedDateFilter={selectedDateFilter}
           />
+        )}
+
+        {/* Stock Update Modal */}
+        {console.log('Modal render check:', { showStockModal, selectedProduct })}
+        {showStockModal && selectedProduct && (
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            <div className="absolute inset-0 bg-black/50" onClick={() => setShowStockModal(false)} />
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-bold text-foreground">Update Stock</h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowStockModal(false)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        Product: {selectedProduct?.name || 'Unknown Product'}
+                      </label>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        Current Stock: {selectedProduct?.stock || 0} units
+                      </label>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        New Stock Quantity:
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={newStockValue}
+                        onChange={(e) => setNewStockValue(e.target.value)}
+                        placeholder="Enter stock quantity"
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowStockModal(false)}
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={updateProductStock}
+                      className="flex-1 bg-gradient-pink"
+                    >
+                      Update Stock
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

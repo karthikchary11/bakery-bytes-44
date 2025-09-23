@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { factoryDashboardData, getAnalyticsByPeriod } from '../data/factoryDashboardData';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -19,20 +20,13 @@ interface FactoryAnalyticsProps {
 
 const FactoryAnalytics = ({ factoryId, factoryType, selectedBranch, selectedDateFilter }: FactoryAnalyticsProps) => {
   const [selectedTimePeriod, setSelectedTimePeriod] = useState('month');
+  
+  // Use comprehensive analytics data
+  const analytics = factoryDashboardData.analytics;
 
-  // Get factory-specific data
-  const factoryOrders = getFactoryOrdersByFactory(factoryId);
-  const factoryProducts = fakeProducts.filter(p => {
-    const categoryMapping = {
-      "chocolate": "Chocolate",
-      "biscuit": "Biscuits", 
-      "cake": "Cakes",
-      "namkeen": "Namkeen",
-      "sweets": "Sweets",
-      "gift_hamper": "Gift Hampers"
-    };
-    return categoryMapping[factoryType] === p.category;
-  });
+  // Use comprehensive data
+  const factoryOrders = factoryDashboardData.factoryOrders;
+  const factoryProducts = factoryDashboardData.factoryProducts;
 
   // Date filtering helper function
   const getDateFilteredOrders = (orders: any[]) => {
@@ -148,10 +142,11 @@ const FactoryAnalytics = ({ factoryId, factoryType, selectedBranch, selectedDate
     stock: product.stock
   }));
 
-  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.totalAmount, 0);
-  const totalOrders = filteredOrders.length;
-  const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
-  const pendingOrders = getFactoryOrdersByStatus(factoryId, 'pending').length;
+  // Use analytics data from comprehensive dataset
+  const totalRevenue = analytics.summary.totalRevenue;
+  const totalOrders = analytics.summary.totalOrders;
+  const avgOrderValue = analytics.summary.averageOrderValue;
+  const pendingOrders = filteredOrders.filter(order => order.status === 'pending').length;
 
   const chartConfig = {
     revenue: {
@@ -285,21 +280,42 @@ const FactoryAnalytics = ({ factoryId, factoryType, selectedBranch, selectedDate
           <CardContent>
             <ChartContainer config={chartConfig} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    dataKey="count"
-                    label={({ status, count }) => `${status}: ${count}`}
-                  >
+                <div className="flex flex-col lg:flex-row items-center gap-4">
+                  <div className="w-full lg:w-2/3">
+                    <PieChart>
+                      <Pie
+                        data={statusData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        innerRadius={20}
+                        dataKey="count"
+                        label={false}
+                      >
+                        {statusData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip 
+                        content={<ChartTooltipContent />}
+                        formatter={(value, name) => [value, name]}
+                      />
+                    </PieChart>
+                  </div>
+                  <div className="w-full lg:w-1/3 space-y-2">
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <div key={index} className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: entry.color }}
+                        />
+                        <span className="text-sm font-medium text-foreground">
+                          {entry.status}: {entry.count}
+                        </span>
+                      </div>
                     ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </PieChart>
+                  </div>
+                </div>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
