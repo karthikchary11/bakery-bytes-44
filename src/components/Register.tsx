@@ -3,10 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { register } from '../utils/auth';
+import { authService } from '../services/auth';
 import { useToast } from '../hooks/use-toast';
 import { Loader2, ArrowLeft } from 'lucide-react';
-import { sendRegistrationNotification } from '../utils/emailService';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -43,45 +42,26 @@ const Register = () => {
     }
 
     try {
-      const result = register(formData);
+      await authService.register({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        branch: formData.location,
+      });
       
-      if (result.success) {
-        toast({
-          title: "Registration Successful",
-          description: result.message,
-        });
-
-        // Send registration notification email to admin
-        try {
-          await sendRegistrationNotification(formData);
-          toast({
-            title: "Notification Sent",
-            description: "Admin has been notified of your registration.",
-          });
-        } catch (emailError) {
-          console.error('Failed to send registration notification:', emailError);
-          toast({
-            title: "Email Warning", 
-            description: "Registration successful but admin notification failed.",
-            variant: "destructive",
-          });
-        }
-        
-        // Redirect to login after successful registration
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } else {
-        toast({
-          title: "Registration Failed",
-          description: "Please try again or contact support.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Registration Successful",
+        description: "Your registration is pending approval. You'll be notified once approved.",
+      });
+      
+      // Redirect to login after successful registration
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.response?.data?.message || "Please try again or contact support.",
         variant: "destructive",
       });
     } finally {

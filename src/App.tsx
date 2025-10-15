@@ -11,18 +11,21 @@ import Register from "./components/Register";
 import AdminDashboard from "./components/AdminDashboard";
 import UserDashboard from "./components/UserDashboard";
 import FactoryDashboard from "./components/FactoryDashboard";
+import OutletManagerDashboard from "./components/OutletManagerDashboard";
 import Navbar from "./components/Navbar";
-import { getCurrentUser } from "./utils/auth";
 
 const queryClient = new QueryClient();
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }: { children: React.ReactNode; requiredRole?: string }) => {
-  const user = getCurrentUser();
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
   
-  if (!user) {
+  if (!token || !userStr) {
     return <Navigate to="/login" replace />;
   }
+  
+  const user = JSON.parse(userStr);
   
   if (requiredRole && user.role !== requiredRole) {
     return <Navigate to="/login" replace />;
@@ -60,9 +63,17 @@ const App = () => (
               } 
             />
             <Route 
+              path="/outlet" 
+              element={
+                <ProtectedRoute requiredRole="outlet_manager">
+                  <OutletManagerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/factory" 
               element={
-                <ProtectedRoute requiredRole="factory">
+                <ProtectedRoute requiredRole="factory_manager">
                   <FactoryDashboard />
                 </ProtectedRoute>
               } 

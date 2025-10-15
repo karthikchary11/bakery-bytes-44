@@ -3,10 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { login } from '../utils/auth';
+import { authService } from '../services/auth';
 import { useToast } from '../hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { sendLoginAlert } from '../utils/emailService';
 import karachiBakeryLogo from '../assets/karachi-bakery-logo.png';
 
 const Login = () => {
@@ -22,40 +21,30 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const result = login(email, password);
+      const response = await authService.login({ email, password });
       
-      if (result.success) {
+      if (response.success) {
+        const user = response.data.user;
         toast({
           title: "Login Successful",
-          description: `Welcome back, ${result.user.name}!`,
+          description: `Welcome back, ${user.name}!`,
         });
-
-        // Send login alert email
-        try {
-          await sendLoginAlert(result.user);
-        } catch (emailError) {
-          console.error('Failed to send login alert:', emailError);
-        }
         
         // Redirect based on role
-        if (result.user.role === 'admin') {
+        if (user.role === 'admin') {
           navigate('/admin');
-        } else if (result.user.role === 'factory') {
+        } else if (user.role === 'factory_manager') {
           navigate('/factory');
+        } else if (user.role === 'outlet_manager') {
+          navigate('/outlet');
         } else {
           navigate('/user');
         }
-      } else {
-        toast({
-          title: "Login Failed",
-          description: result.message,
-          variant: "destructive",
-        });
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
+        title: "Login Failed",
+        description: error.response?.data?.message || "Invalid credentials",
         variant: "destructive",
       });
     } finally {
@@ -136,9 +125,9 @@ const Login = () => {
           <div className="mt-6 p-4 bg-secondary rounded-lg">
             <h3 className="font-semibold mb-2">Demo Credentials:</h3>
             <div className="text-sm space-y-1">
-              <p><strong>Admin:</strong> admin@karachibakery.com / admin123</p>
-              <p><strong>User:</strong> franchise1@karachibakery.com / franchise123</p>
-              <p><strong>Factory:</strong> chocolate@karachibakery.com / chocolate123</p>
+              <p><strong>Admin:</strong> admin@karachibakery.com / admin123456</p>
+              <p><strong>Outlet Manager:</strong> outlet1@karachibakery.com / outlet123</p>
+              <p><strong>Factory Manager:</strong> chocolate@karachibakery.com / factory123</p>
             </div>
           </div>
 
