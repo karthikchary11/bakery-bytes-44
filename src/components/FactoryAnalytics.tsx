@@ -103,7 +103,7 @@ const FactoryAnalytics = ({ factoryId, factoryType, selectedBranch, selectedDate
   filteredOrders = getTimeFilteredData(filteredOrders);
 
   // Prepare data for charts
-  const branchData = filteredOrders.reduce((acc, order) => {
+  const branchData = filteredOrders.reduce((acc: Record<string, { orders: number; revenue: number }>, order) => {
     const branchName = order.branchName;
     if (!acc[branchName]) {
       acc[branchName] = { orders: 0, revenue: 0 };
@@ -111,9 +111,9 @@ const FactoryAnalytics = ({ factoryId, factoryType, selectedBranch, selectedDate
     acc[branchName].orders += 1;
     acc[branchName].revenue += order.totalAmount;
     return acc;
-  }, {});
+  }, {} as Record<string, { orders: number; revenue: number }>);
 
-  const branchChartData = Object.entries(branchData).map(([branch, data]) => ({
+  const branchChartData = Object.entries(branchData).map(([branch, data]: [string, { orders: number; revenue: number }]) => ({
     branch,
     orders: data.orders,
     revenue: data.revenue
